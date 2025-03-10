@@ -1,0 +1,41 @@
+name: Deploy with Personal Access Token
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Checkout the repository
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      # Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      # Install dependencies without creating a lock file
+      - name: Install dependencies
+        run: npm install --no-package-lock
+      
+      # Build the React app
+      - name: Build
+        run: npm run build
+        env:
+          CI: false
+      
+      # Deploy to GitHub Pages using the token
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: build
+          branch: gh-pages
+          token: ${{ secrets.DEPLOY_TOKEN }}
+          clean: true
+          commit-message: "Deploy React app to GitHub Pages"

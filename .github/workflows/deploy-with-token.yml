@@ -23,6 +23,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+
+      # Install the latest version of npm
+      - name: Install latest npm
+        run: npm install -g npm@latest
       
       # Install dependencies without creating a lock file
       - name: Install dependencies

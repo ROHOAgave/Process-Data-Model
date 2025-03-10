@@ -9,16 +9,119 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     
+    permissions:
+      contents: write
+    
     steps:
-      # Checkout the repository
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       
-      # List contents of root directory
-      - name: List root directory
-        run: ls -R
+      - name: Directory check
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Repository contents:"
+          ls -la
       
-      # Set up Node.js environment to a compatible version
+      - name: Create package.json
+        run: |
+          echo '{
+            "name": "process-data-model",
+            "version": "0.1.0",
+            "homepage": "https://ROHOAgave.github.io/Process-Data-Model",
+            "private": true,
+            "dependencies": {
+              "react": "^18.2.0",
+              "react-dom": "^18.2.0",
+              "react-scripts": "5.0.1",
+              "recharts": "^2.5.0"
+            },
+            "scripts": {
+              "start": "react-scripts start",
+              "build": "react-scripts build",
+              "test": "react-scripts test",
+              "eject": "react-scripts eject"
+            },
+            "browserslist": {
+              "production": [
+                ">0.2%",
+                "not dead",
+                "not op_mini all"
+              ],
+              "development": [
+                "last 1 chrome version",
+                "last 1 firefox version",
+                "last 1 safari version"
+              ]
+            }
+          }' > package.json
+          
+          echo "Created package.json:"
+          cat package.json
+      
+      - name: Create project structure
+        run: |
+          # Create directories
+          mkdir -p public src/components
+          
+          # Create index.html
+          echo '<!DOCTYPE html>
+          <html lang="en">
+            <head>
+              <meta charset="utf-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1" />
+              <title>Agave Production Estimator</title>
+            </head>
+            <body>
+              <div id="root"></div>
+            </body>
+          </html>' > public/index.html
+          
+          # Create index.js
+          echo 'import React from "react";
+          import ReactDOM from "react-dom/client";
+          import App from "./App";
+          
+          const root = ReactDOM.createRoot(document.getElementById("root"));
+          root.render(
+            <React.StrictMode>
+              <App />
+            </React.StrictMode>
+          );' > src/index.js
+          
+          # Create App.js
+          echo 'import React from "react";
+          import ProductionEstimator from "./components/ProductionEstimator";
+          
+          function App() {
+            return (
+              <div>
+                <h1>Agave Production Estimator</h1>
+                <ProductionEstimator />
+              </div>
+            );
+          }
+          
+          export default App;' > src/App.js
+          
+          # Create a basic ProductionEstimator component
+          echo 'import React, { useState } from "react";
+          
+          const ProductionEstimator = () => {
+            return (
+              <div>
+                <h2>Production Estimator</h2>
+                <p>This is a placeholder component. The real component will be added here.</p>
+              </div>
+            );
+          };
+          
+          export default ProductionEstimator;' > src/components/ProductionEstimator.js
+          
+          echo "Project structure created"
+      
+   # Set up Node.js environment to a compatible version
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -28,65 +131,24 @@ jobs:
       - name: Install latest npm
         run: npm install -g npm@latest
       
-      # Install dependencies without creating a lock file
       - name: Install dependencies
         run: npm install --no-package-lock
-        working-directory: ./Process-Data-Model
-
-      # Check and set permissions for index.html
-      - name: Check and set permissions for index.html
-        run: |
-          chmod 644 ./Process-Data-Model/public/index.html
-          ls -l ./Process-Data-Model/public/index.html
       
-      # Build the React app
       - name: Build
         run: npm run build
-        env:
-          CI: false
-        working-directory: ./Process-Data-Model
-      
-      - name: Debug before deploy
-        run: |
-          echo "Build directory contents:"
-          ls -la build/ || echo "Build directory not found!"
-          
-          echo "Git configuration:"
-          git config --list
-          
-          echo "Current git status:"
-          git status
-      
-      - name: Configure Git
-        run: |
-          git config --global user.name "GitHub Actions Bot"
-          git config --global user.email "actions@github.com"
-      
-      - name: Check for build script
-        run: |
-          echo "Checking npm scripts:"
-          npm run || echo "No scripts found"
-      
-      - name: Build with verbose logging
-        run: |
-          echo "Starting build process..."
-          npm run build --verbose
         env:
           CI: false
       
       - name: Verify build output
         run: |
-          echo "Current directory: $(pwd)"
           echo "Directory contents after build:"
           ls -la
           
-          echo "Checking for build directory:"
           if [ -d "build" ]; then
             echo "Build directory exists, contents:"
             ls -la build/
           else
-            echo "Build directory not found! Checking subdirectories:"
-            find . -type d -name "build" | xargs -I{} ls -la {}
+            echo "Build directory not found!"
           fi
       
       - name: Deploy to GitHub Pages

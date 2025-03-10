@@ -29,6 +29,10 @@ jobs:
         run: npm run build
         env:
           CI: false
+
+      # List build directory
+      - name: List build directory
+        run: ls -R build
       
       # Deploy to GitHub Pages using the token
       - name: Deploy

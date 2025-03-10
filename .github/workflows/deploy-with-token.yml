@@ -31,7 +31,8 @@ jobs:
       
       # List contents of public directory
       - name: List public directory
-        run: ls -R ./Process-Data-Model/public
+        run: ls -R public
+        working-directory: ./Process-Data-Model
       
       # Build the React app
       - name: Build
@@ -42,13 +43,14 @@ jobs:
       
       # List build directory
       - name: List build directory
-        run: ls -R ./Process-Data-Model/build
+        run: ls -R build
+        working-directory: ./Process-Data-Model
       
       # Deploy to GitHub Pages using the token
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: Process-Data-Model/build
+          folder: build
           branch: gh-pages
           token: ${{ secrets.DEPLOY_TOKEN }}
           clean: true

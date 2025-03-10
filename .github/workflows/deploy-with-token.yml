@@ -67,10 +67,10 @@ jobs:
 
       # Deploy to GitHub Pages using the token
       - name: Deploy
-        uses: ROHOAgave/github-pages-deploy-action@v4
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: Process-Data-Model/build
           branch: gh-pages
-          token: ${{ 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 }}
+          token: ${{ secrets.DEPLOY_TOKEN }}
           clean: true
           commit-message: "Deploy React app to GitHub Pages"

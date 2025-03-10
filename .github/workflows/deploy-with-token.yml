@@ -18,11 +18,11 @@ jobs:
       - name: List root directory
         run: ls -R
       
-      # Set up Node.js environment
+      # Set up Node.js environment to a compatible version
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '22.9.0'
 
       # Install the latest version of npm
       - name: Install latest npm

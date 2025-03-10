@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/Process-Data-Model/static/css/main.454b2edd.css",
+    "main.js": "/Process-Data-Model/static/js/main.c9bdc828.js",
+    "index.html": "/Process-Data-Model/index.html",
+    "main.454b2edd.css.map": "/Process-Data-Model/static/css/main.454b2edd.css.map",
+    "main.c9bdc828.js.map": "/Process-Data-Model/static/js/main.c9bdc828.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.454b2edd.css",
+    "static/js/main.c9bdc828.js"
+  ]
+}

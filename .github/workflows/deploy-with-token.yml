@@ -18,18 +18,12 @@ jobs:
         with:
           persist-credentials: false
       
-      - name: Directory check
-        run: |
-          echo "Current directory: $(pwd)"
-          echo "Repository contents:"
-          ls -la
-      
       - name: Create package.json
         run: |
           echo '{
             "name": "process-data-model",
             "version": "0.1.0",
-            "homepage": "https://ROHOAgave.github.io/Process-Data-Model",
+            "homepage": "https://rohoagave.github.io/Process-Data-Model",
             "private": true,
             "dependencies": {
               "react": "^18.2.0",
@@ -56,16 +50,11 @@ jobs:
               ]
             }
           }' > package.json
-          
-          echo "Created package.json:"
-          cat package.json
       
       - name: Create project structure
         run: |
-          # Create directories
           mkdir -p public src/components
           
-          # Create index.html
           echo '<!DOCTYPE html>
           <html lang="en">
             <head>
@@ -78,7 +67,6 @@ jobs:
             </body>
           </html>' > public/index.html
           
-          # Create index.js
           echo 'import React from "react";
           import ReactDOM from "react-dom/client";
           import App from "./App";
@@ -90,7 +78,6 @@ jobs:
             </React.StrictMode>
           );' > src/index.js
           
-          # Create App.js
           echo 'import React from "react";
           import ProductionEstimator from "./components/ProductionEstimator";
           
@@ -105,23 +92,20 @@ jobs:
           
           export default App;' > src/App.js
           
-          # Create a basic ProductionEstimator component
-          echo 'import React, { useState } from "react";
+          echo 'import React from "react";
           
           const ProductionEstimator = () => {
             return (
               <div>
                 <h2>Production Estimator</h2>
-                <p>This is a placeholder component. The real component will be added here.</p>
+                <p>Basic component placeholder</p>
               </div>
             );
           };
           
           export default ProductionEstimator;' > src/components/ProductionEstimator.js
-          
-          echo "Project structure created"
       
-   # Set up Node.js environment to a compatible version
+# Set up Node.js environment to a compatible version
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -139,24 +123,9 @@ jobs:
         env:
           CI: false
       
-      - name: Verify build output
-        run: |
-          echo "Directory contents after build:"
-          ls -la
-          
-          if [ -d "build" ]; then
-            echo "Build directory exists, contents:"
-            ls -la build/
-          else
-            echo "Build directory not found!"
-          fi
-      
       - name: Deploy to GitHub Pages
-        if: success() && hashFiles('build/**') != ''
-        uses: JamesIves/github-pages-deploy-action@v4
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          folder: build
-          branch: gh-pages
-          token: ${{ secrets.DEPLOY_TOKEN }}
-          clean: true
-          commit-message: "Deploy React app to GitHub Pages"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
+          force_orphan: true

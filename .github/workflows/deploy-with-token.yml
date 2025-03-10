@@ -26,7 +26,7 @@ jobs:
       
       # Install dependencies without creating a lock file
       - name: Install dependencies
-        run: npm install --no-package-lock
+        run: npm install -g npm@11.2.0
         working-directory: ./Process-Data-Model
       
       # List contents of public directory
@@ -37,8 +37,6 @@ jobs:
       # Build the React app
       - name: Build
         run: npm run build
-        env:
-          CI: false
         working-directory: ./Process-Data-Model
       
       # List build directory

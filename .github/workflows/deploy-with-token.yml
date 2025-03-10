@@ -31,8 +31,7 @@ jobs:
       
       # List contents of public directory
       - name: List public directory
-        run: ls -R public
-        working-directory: ./Process-Data-Model
+        run: ls -R ./Process-Data-Model/public
       
       # Build the React app
       - name: Build
@@ -43,8 +42,7 @@ jobs:
       
       # List build directory
       - name: List build directory
-        run: ls -R build
-        working-directory: ./Process-Data-Model
+        run: ls -R ./Process-Data-Model/build
       
       # Deploy to GitHub Pages using the token
       - name: Deploy

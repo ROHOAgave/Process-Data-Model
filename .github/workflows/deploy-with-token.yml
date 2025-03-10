@@ -48,11 +48,8 @@ jobs:
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: build
+          folder: Process-Data-Model/build
           branch: gh-pages
           token: ${{ secrets.DEPLOY_TOKEN }}
           clean: true
           commit-message: "Deploy React app to GitHub Pages"
-        env:
-          CI: false
-        working-directory: ./Process-Data-Model

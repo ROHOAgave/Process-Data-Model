@@ -1,4 +1,4 @@
-name: Deploy with Personal Access Token
+name: Deploy Full Component
 
 on:
   push:
@@ -18,7 +18,7 @@ jobs:
         with:
           persist-credentials: false
       
-      - name: Create package.json
+      - name: Create package.json with Tailwind
         run: |
           echo '{
             "name": "process-data-model",
@@ -29,7 +29,10 @@ jobs:
               "react": "^18.2.0",
               "react-dom": "^18.2.0",
               "react-scripts": "5.0.1",
-              "recharts": "^2.5.0"
+              "recharts": "^2.5.0",
+              "tailwindcss": "^3.3.3",
+              "autoprefixer": "^10.4.14",
+              "postcss": "^8.4.27"
             },
             "scripts": {
               "start": "react-scripts start",
@@ -50,6 +53,23 @@ jobs:
               ]
             }
           }' > package.json
+      
+      - name: Create Tailwind config
+        run: |
+          echo "module.exports = {
+            content: [
+              './src/**/*.{js,jsx,ts,tsx}',
+              './public/index.html'
+            ],
+            theme: {
+              extend: {},
+            },
+            plugins: [],
+          }" > tailwind.config.js
+          
+          echo "@tailwind base;
+          @tailwind components;
+          @tailwind utilities;" > src/index.css
       
       - name: Create project structure
         run: |
@@ -505,16 +525,11 @@ jobs:
 
           export default ProductionEstimator;
           EOL
-          
-# Set up Node.js environment to a compatible version
+      
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '22.9.0'
-
-      # Install the latest version of npm
-      - name: Install latest npm
-        run: npm install -g npm@latest
+          node-version: '18'
       
       - name: Install dependencies
         run: npm install --no-package-lock

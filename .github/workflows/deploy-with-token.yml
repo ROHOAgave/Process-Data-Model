@@ -46,16 +46,30 @@ jobs:
           CI: false
         working-directory: ./Process-Data-Model
       
-      # List build directory
-      - name: List build directory
-        run: ls -R ./Process-Data-Model/build
+      - name: Debug before deploy
+        run: |
+          echo "Build directory contents:"
+          ls -la build/ || echo "Build directory not found!"
+          
+          echo "Git configuration:"
+          git config --list
+          
+          echo "Current git status:"
+          git status
       
-      # Deploy to GitHub Pages using the token
-      - name: Deploy
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+      
+      - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: Process-Data-Model/build
+          folder: build
           branch: gh-pages
           token: ${{ secrets.DEPLOY_TOKEN }}
           clean: true
+          git-config-name: GitHub Actions Bot
+          git-config-email: actions@github.com
           commit-message: "Deploy React app to GitHub Pages"
+          single-commit: true

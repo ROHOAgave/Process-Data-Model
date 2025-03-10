@@ -24,12 +24,16 @@ jobs:
       - name: Install dependencies
         run: npm install --no-package-lock
       
+      # List contents of public directory
+      - name: List public directory
+        run: ls -R public
+      
       # Build the React app
       - name: Build
         run: npm run build
         env:
           CI: false
-
+      
       # List build directory
       - name: List build directory
         run: ls -R build

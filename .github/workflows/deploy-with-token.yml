@@ -1,4 +1,4 @@
-name: Deploy with Personal Access Token
+name: Deploy with Dependencies
 
 on:
   push:
@@ -18,7 +18,7 @@ jobs:
         with:
           persist-credentials: false
       
-      - name: Create package.json
+      - name: Create package.json with Tailwind
         run: |
           echo '{
             "name": "process-data-model",
@@ -29,7 +29,10 @@ jobs:
               "react": "^18.2.0",
               "react-dom": "^18.2.0",
               "react-scripts": "5.0.1",
-              "recharts": "^2.5.0"
+              "recharts": "^2.5.0",
+              "tailwindcss": "^3.3.3",
+              "autoprefixer": "^10.4.14",
+              "postcss": "^8.4.27"
             },
             "scripts": {
               "start": "react-scripts start",
@@ -51,6 +54,23 @@ jobs:
             }
           }' > package.json
       
+      - name: Create Tailwind config
+        run: |
+          echo "module.exports = {
+            content: [
+              './src/**/*.{js,jsx,ts,tsx}',
+              './public/index.html'
+            ],
+            theme: {
+              extend: {},
+            },
+            plugins: [],
+          }" > tailwind.config.js
+          
+          echo "@tailwind base;
+          @tailwind components;
+          @tailwind utilities;" > src/index.css
+      
       - name: Create project structure
         run: |
           mkdir -p public src/components
@@ -69,6 +89,7 @@ jobs:
           
           echo 'import React from "react";
           import ReactDOM from "react-dom/client";
+          import "./index.css";
           import App from "./App";
           
           const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -83,37 +104,112 @@ jobs:
           
           function App() {
             return (
-              <div>
-                <h1>Agave Production Estimator</h1>
-                <ProductionEstimator />
+              <div className="App">
+                <header className="bg-gray-800 text-white p-4">
+                  <h1 className="text-3xl font-bold">Agave Production Estimator</h1>
+                  <p className="mt-2">Track and forecast agave production and distribution</p>
+                </header>
+                <main className="container mx-auto py-6 px-4">
+                  <ProductionEstimator />
+                </main>
               </div>
             );
           }
           
           export default App;' > src/App.js
-          
-          echo 'import React from "react";
+      
+      - name: Create ProductionEstimator component
+        run: |
+          echo 'import React, { useState } from "react";
+          import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
           
           const ProductionEstimator = () => {
+            // Initial data based on specifications
+            const generateInitialData = (bottleRatio = 2) => {
+              const rows = [];
+              let currentBatch = 20;
+              let currentDate = new Date("2025-03-07");
+              let currentAgave = 65;
+              
+              for (let i = 0; i < 10; i++) {
+                // Calculate values based on rules
+                const fermentedLiquid = currentAgave * 35;
+                const bottles = currentAgave * bottleRatio;
+                
+                rows.push({
+                  id: i,
+                  batch: currentBatch,
+                  date: currentDate,
+                  agave: currentAgave,
+                  fermentedLiquid: fermentedLiquid,
+                  bottleRatio: bottleRatio,
+                  bottles: bottles,
+                  kenyaSales: Math.round(bottles * 0.3)
+                });
+                
+                // Increment for next row
+                currentBatch += 1;
+                currentDate = new Date(currentDate.getTime() + (3 * 7 * 24 * 60 * 60 * 1000)); // add 3 weeks
+                currentAgave = Math.min(currentAgave + 5, 100); // Cap at 100
+              }
+              
+              return rows;
+            };
+            
+            const [data, setData] = useState(generateInitialData());
+            
             return (
-              <div>
-                <h2>Production Estimator</h2>
-                <p>Basic component placeholder</p>
+              <div className="p-4 border rounded bg-white">
+                <h2 className="text-2xl font-bold mb-4">Production Estimator Model</h2>
+                
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="text-lg font-bold mb-2">Production Summary</h3>
+                    <div className="bg-gray-50 p-4 rounded border">
+                      <p className="mb-1">Total Agave Pieces: {data.reduce((sum, row) => sum + row.agave, 0)}</p>
+                      <p className="mb-1">Total Fermented Liquid: {data.reduce((sum, row) => sum + row.fermentedLiquid, 0)}</p>
+                      <p className="mb-1">Total Bottles: {data.reduce((sum, row) => sum + row.bottles, 0)}</p>
+                      <p className="mb-1">Average Bottle Ratio: {(data.reduce((sum, row) => sum + row.bottleRatio, 0) / data.length).toFixed(2)}</p>
+                      <p className="mb-1">Total Kenya Sales: {data.reduce((sum, row) => sum + (row.kenyaSales || 0), 0)}</p>
+                      <p>Total UK Sales: {data.reduce((sum, row) => sum + (row.bottles - (row.kenyaSales || 0)), 0)}</p>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-lg font-bold mb-2">Production Chart</h3>
+                    <div style={{ width: "100%", height: 300 }}>
+                      <ResponsiveContainer>
+                        <BarChart
+                          data={data}
+                          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="batch" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Bar dataKey="bottles" fill="#8884d8" name="Total Bottles" />
+                          <Bar dataKey="kenyaSales" fill="#82ca9d" name="Kenya Sales" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                </div>
               </div>
             );
           };
           
           export default ProductionEstimator;' > src/components/ProductionEstimator.js
       
-# Set up Node.js environment to a compatible version
+      - name: Verify file structure
+        run: |
+          echo "Repository structure:"
+          find . -type f | grep -v "node_modules" | sort
+      
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '22.9.0'
-
-      # Install the latest version of npm
-      - name: Install latest npm
-        run: npm install -g npm@latest
+          node-version: '18'
       
       - name: Install dependencies
         run: npm install --no-package-lock

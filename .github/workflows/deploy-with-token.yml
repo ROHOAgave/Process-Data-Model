@@ -14,6 +14,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       
+      # List contents of root directory
+      - name: List root directory
+        run: ls -R
+      
       # Set up Node.js environment
       - name: Set up Node.js
         uses: actions/setup-node@v3

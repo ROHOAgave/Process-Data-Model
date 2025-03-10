@@ -27,20 +27,24 @@ jobs:
       # Install dependencies without creating a lock file
       - name: Install dependencies
         run: npm install --no-package-lock
+        working-directory: ./Process-Data-Model
       
       # List contents of public directory
       - name: List public directory
         run: ls -R public
+        working-directory: ./Process-Data-Model
       
       # Build the React app
       - name: Build
         run: npm run build
         env:
           CI: false
+        working-directory: ./Process-Data-Model
       
       # List build directory
       - name: List build directory
         run: ls -R build
+        working-directory: ./Process-Data-Model
       
       # Deploy to GitHub Pages using the token
       - name: Deploy
@@ -51,3 +55,4 @@ jobs:
           token: ${{ secrets.DEPLOY_TOKEN }}
           clean: true
           commit-message: "Deploy React app to GitHub Pages"
+        working-directory: ./Process-Data-Model

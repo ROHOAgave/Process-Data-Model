@@ -18,6 +18,10 @@ jobs:
         with:
           persist-credentials: false
       
+      - name: Create project structure
+        run: |
+          mkdir -p public src/components
+      
       - name: Create package.json with Tailwind
         run: |
           echo '{
@@ -71,10 +75,8 @@ jobs:
           @tailwind components;
           @tailwind utilities;" > src/index.css
       
-      - name: Create project structure
+      - name: Create HTML and JS files
         run: |
-          mkdir -p public src/components
-          
           echo '<!DOCTYPE html>
           <html lang="en">
             <head>

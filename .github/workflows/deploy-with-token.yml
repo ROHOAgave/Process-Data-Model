@@ -13,11 +13,11 @@ jobs:
       # Checkout the repository
       - name: Checkout
         uses: actions/checkout@v3
-      
+
       # List contents of root directory
       - name: List root directory
         run: ls -R
-      
+
       # Set up Node.js environment to a compatible version
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -27,7 +27,7 @@ jobs:
       # Install the latest version of npm
       - name: Install latest npm
         run: npm install -g npm@latest
-      
+
       # Install dependencies without creating a lock file
       - name: Install dependencies
         run: npm install --no-package-lock
@@ -36,34 +36,41 @@ jobs:
       # List contents of Process-Data-Model directory
       - name: List Process-Data-Model directory
         run: ls -R ./Process-Data-Model
-      
+
       # List contents of public directory
       - name: List public directory
         run: ls -R ./Process-Data-Model/public
-      
+
       # Check and set permissions for index.html
       - name: Check and set permissions for index.html
         run: |
           chmod 644 ./Process-Data-Model/public/index.html
           ls -l ./Process-Data-Model/public/index.html
-      
+
+      # Debug environment variables and current directory
+      - name: Print environment variables
+        run: printenv
+
+      - name: Print working directory
+        run: pwd
+
       # Build the React app
       - name: Build
         run: npm run build
         env:
           CI: false
         working-directory: ./Process-Data-Model
-      
+
       # List build directory
       - name: List build directory
         run: ls -R ./Process-Data-Model/build
-      
+
       # Deploy to GitHub Pages using the token
       - name: Deploy
-        uses: JamesIves/github-pages-deploy-action@v4
+        uses: ROHOAgave/github-pages-deploy-action@v4
         with:
           folder: Process-Data-Model/build
           branch: gh-pages
-          token: ${{ secrets.DEPLOY_TOKEN }}
+          token: ${{ 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 }}
           clean: true
           commit-message: "Deploy React app to GitHub Pages"

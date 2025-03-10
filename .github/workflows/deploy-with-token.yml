@@ -62,14 +62,39 @@ jobs:
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "actions@github.com"
       
+      - name: Check for build script
+        run: |
+          echo "Checking npm scripts:"
+          npm run || echo "No scripts found"
+      
+      - name: Build with verbose logging
+        run: |
+          echo "Starting build process..."
+          npm run build --verbose
+        env:
+          CI: false
+      
+      - name: Verify build output
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Directory contents after build:"
+          ls -la
+          
+          echo "Checking for build directory:"
+          if [ -d "build" ]; then
+            echo "Build directory exists, contents:"
+            ls -la build/
+          else
+            echo "Build directory not found! Checking subdirectories:"
+            find . -type d -name "build" | xargs -I{} ls -la {}
+          fi
+      
       - name: Deploy to GitHub Pages
+        if: success() && hashFiles('build/**') != ''
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: build
           branch: gh-pages
           token: ${{ secrets.DEPLOY_TOKEN }}
           clean: true
-          git-config-name: GitHub Actions Bot
-          git-config-email: actions@github.com
           commit-message: "Deploy React app to GitHub Pages"
-          single-commit: true

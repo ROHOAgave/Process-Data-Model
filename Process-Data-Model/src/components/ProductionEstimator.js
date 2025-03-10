@@ -11,6 +11,12 @@ const ProductionEstimator = () => {
     return `${day}/${month}/${year}`;
   };
   
+  // Format month as 3-letter abbreviation
+  const formatMonthAbbrev = (monthNum) => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months[monthNum - 1];
+  };
+  
   const addWeeks = (date, weeks) => {
     const newDate = new Date(date);
     newDate.setDate(newDate.getDate() + weeks * 7);
@@ -52,8 +58,8 @@ const ProductionEstimator = () => {
         fermentedLiquid: fermentedLiquid,
         bottleRatio: bottleRatio,
         bottles: bottles,
-        // Default Kenya sales as 30% of total bottles
-        kenyaSales: Math.round(bottles * 0.3)
+        // Default Kenya sales as 20% of total bottles
+        kenyaSales: Math.round(bottles * 0.2)
       });
       
       // Increment for next row
@@ -79,8 +85,7 @@ const ProductionEstimator = () => {
     // Group by month and year
     sortedData.forEach(row => {
       const date = row.date;
-      // Format as MM/YYYY for UK format consistency
-      const monthYear = `${date.getMonth() + 1}/${date.getFullYear()}`;
+      const monthYear = `${formatMonthAbbrev(date.getMonth() + 1)} ${date.getFullYear()}`;
       
       // Calculate sales breakdown
       const kenyaSales = row.kenyaSales || 0;
@@ -151,7 +156,7 @@ const ProductionEstimator = () => {
                 updatedRow.bottles
               );
             } else {
-              updatedRow.kenyaSales = Math.round(updatedRow.bottles * 0.3);
+              updatedRow.kenyaSales = Math.round(updatedRow.bottles * 0.2);
             }
           } else if (field === 'bottleRatio') {
             updatedRow.bottles = row.agave * numValue;
@@ -163,7 +168,7 @@ const ProductionEstimator = () => {
                 updatedRow.bottles
               );
             } else {
-              updatedRow.kenyaSales = Math.round(updatedRow.bottles * 0.3);
+              updatedRow.kenyaSales = Math.round(updatedRow.bottles * 0.2);
             }
           } else if (field === 'kenyaSales') {
             // Ensure Kenya sales don't exceed total bottles
@@ -192,7 +197,7 @@ const ProductionEstimator = () => {
         const kenyaRatio = row.kenyaSales / row.bottles;
         newKenyaSales = Math.min(Math.round(newBottles * kenyaRatio), newBottles);
       } else {
-        newKenyaSales = Math.round(newBottles * 0.3);
+        newKenyaSales = Math.round(newBottles * 0.2);
       }
       
       return {
@@ -208,9 +213,9 @@ const ProductionEstimator = () => {
   
   // Handle Kenya sales change for a specific month/year
   const handleMonthlySalesChange = (monthYear, kenyaBottles) => {
-    // Find all rows for the given month/year
-    const month = parseInt(monthYear.split('/')[0]);
-    const year = parseInt(monthYear.split('/')[1]);
+    // Handle Kenya sales change for a specific month/year
+    const month = parseInt(monthYear.split(' ')[0]);
+    const year = parseInt(monthYear.split(' ')[1]);
     
     // Get total bottles for this month
     const monthTotalBottles = data.reduce((total, row) => {
@@ -249,8 +254,19 @@ const ProductionEstimator = () => {
   
   // Calculate maximum Kenya sales for a month (cannot exceed total bottles)
   const getMaxKenyaSales = (monthYear) => {
-    const month = parseInt(monthYear.split('/')[0]);
-    const year = parseInt(monthYear.split('/')[1]);
+    // Parse the stored data format (e.g., "Jan 2025")
+    const parts = monthYear.split(' ');
+    const monthStr = parts[0];
+    const year = parseInt(parts[1]);
+    
+    // Find the month number
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = months.indexOf(monthStr) + 1;
+    
+    if (month === 0) {
+      console.error("Invalid month abbreviation:", monthStr);
+      return 0;
+    }
     
     return data.reduce((total, row) => {
       const rowMonth = row.date.getMonth() + 1;
@@ -265,8 +281,19 @@ const ProductionEstimator = () => {
   
   // Calculate current Kenya sales for a month
   const getCurrentKenyaSales = (monthYear) => {
-    const month = parseInt(monthYear.split('/')[0]);
-    const year = parseInt(monthYear.split('/')[1]);
+    // Parse the stored data format (e.g., "Jan 2025")
+    const parts = monthYear.split(' ');
+    const monthStr = parts[0];
+    const year = parseInt(parts[1]);
+    
+    // Find the month number
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = months.indexOf(monthStr) + 1;
+    
+    if (month === 0) {
+      console.error("Invalid month abbreviation:", monthStr);
+      return 0;
+    }
     
     return data.reduce((total, row) => {
       const rowMonth = row.date.getMonth() + 1;
@@ -410,27 +437,30 @@ const ProductionEstimator = () => {
         </div>
         
         <div>
-          <h3 className="text-lg font-bold mb-2">Cumulative Bottles Distribution by Market</h3>
+          <h3 className="text-lg font-bold mb-2">Kenya Market Distribution by Month</h3>
           
           <div className="mb-4">
-            <h4 className="text-md font-medium mb-2">Adjust Kenya Sales by Month (in bottles)</h4>
-            <div className="grid grid-cols-2 gap-2">
+            <h4 className="text-md font-medium mb-2">Kenya Sales Proportion by Month</h4>
+            <div className="grid grid-cols-1 gap-2">
               {prepareDistributionData().map(monthData => {
-                const currentKenyaSales = getCurrentKenyaSales(monthData.month);
-                const maxKenyaSales = getMaxKenyaSales(monthData.month);
+                const currentKenyaSales = monthData.kenya;
+                const totalBottles = monthData.bottles;
+                const kenyaPercentage = totalBottles > 0 ? Math.round((currentKenyaSales / totalBottles) * 100) : 0;
                 
                 return (
-                  <div key={monthData.month} className="flex items-center">
-                    <label className="mr-2 text-sm">{monthData.month}:</label>
-                    <input
-                      type="number"
-                      min="0"
-                      max={maxKenyaSales}
-                      value={currentKenyaSales}
-                      onChange={(e) => handleMonthlySalesChange(monthData.month, e.target.value)}
-                      className="w-20 p-1 border rounded"
-                    />
-                    <span className="ml-2 text-sm">/ {maxKenyaSales} bottles</span>
+                  <div key={monthData.month} className="mb-2">
+                    <div className="flex items-center mb-1">
+                      <label className="mr-2 text-sm w-16">{monthData.month}:</label>
+                      <span className="text-sm">{currentKenyaSales} / {totalBottles} bottles ({kenyaPercentage}%)</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-4">
+                      <div 
+                        className="bg-orange-500 h-4 rounded-full" 
+                        style={{ width: `${kenyaPercentage}%` }}
+                        title={`Kenya: ${kenyaPercentage}%`}
+                      >
+                      </div>
+                    </div>
                   </div>
                 );
               })}
